@@ -9,15 +9,16 @@
     "dev": "bun run --hot src/index.ts",
     "start": "bun run dist/index.js",
     "db:generate": "bunx drizzle-kit generate",
-    "db:migrate": "bun run src/db/migrate.ts",
+    "db:migrate": "bunx drizzle-kit migrate",
     "db:studio": "bunx drizzle-kit studio"
   },
   "dependencies": {
-    "@EventBookingSystem/db": "workspace:*",
     "@neondatabase/serverless": "^1.0.2",
+    "@types/bcrypt": "^6.0.0",
+    "bcrypt": "^6.0.0",
     "dotenv": "catalog:",
     "drizzle-orm": "^0.44.7",
-    "hono": "^4.8.2",
+    "hono": "^4.10.3",
     "zod": "catalog:"
   },
   "devDependencies": {
