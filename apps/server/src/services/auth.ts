@@ -100,7 +100,6 @@ export class AuthService {
       email: userData.email,
       name: userData.name,
       passwordHash,
-      role: userData.role || "user",
     };
 
     const createdUsers = await db.insert(users).values(newUser).returning();
