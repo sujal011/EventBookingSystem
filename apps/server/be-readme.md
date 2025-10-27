@@ -175,3 +175,36 @@ CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_users_role ON users(role);
 
 ```
+### Task
+ 4: Core Event Management Functionality ✅
+
+**4.1 Create event model and validation schemas** ✅
+- Created comprehensive Zod validation schemas for event operations in `apps/server/src/schemas/event.ts`
+- Implemented `createEventSchema` with validation for name, description, date, and seat capacity
+- Added `updateEventSchema` for partial event updates with proper validation
+- Created `eventQuerySchema` for filtering and pagination parameters
+- Added `eventIdSchema` for URL parameter validation
+- Implemented business logic validation (future dates, capacity limits)
+
+**4.2 Build event CRUD API endpoints** ✅
+- Created complete event management API in `apps/server/src/routes/events.ts`
+- Implemented authentication and authorization middleware in `apps/server/src/middleware/auth.ts`
+- Built comprehensive event service layer in `apps/server/src/services/event.ts`
+- Added all required endpoints:
+  - `GET /api/events` - List events with availability (public with optional auth)
+  - `GET /api/events/:id` - Get event details (public)
+  - `POST /api/events` - Create events (admin only)
+  - `PUT /api/events/:id` - Update events (admin/creator only)
+  - `DELETE /api/events/:id` - Delete events (admin/creator only)
+
+**Key Features Implemented:**
+- **Input Validation**: Comprehensive Zod schemas with business rule validation
+- **Authentication Middleware**: JWT-based auth with role-based access control
+- **Event Service Layer**: Business logic separation with proper error handling
+- **CRUD Operations**: Full event lifecycle management with proper permissions
+- **Data Integrity**: Seat capacity management and booking constraint validation
+- **Error Handling**: Structured error responses with appropriate HTTP status codes
+- **Type Safety**: Full TypeScript integration with proper type definitions
+- **Security**: Role-based access control (admin/creator permissions)
+
+The event management system is now fully functional and integrated with the authentication system. Admins can create and manage events, while users can view available events with real-time seat availability.

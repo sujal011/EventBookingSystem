@@ -13,6 +13,7 @@
     "db:studio": "bunx drizzle-kit studio"
   },
   "dependencies": {
+    "@hono/zod-validator": "^0.7.4",
     "@neondatabase/serverless": "^1.0.2",
     "@types/bcrypt": "^6.0.0",
     "bcrypt": "^6.0.0",
