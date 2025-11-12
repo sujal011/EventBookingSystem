@@ -100,8 +100,6 @@ export class BookingService {
       if (createdBooking.event) {
         WebSocketManager.broadcastBookingCreated(
           eventId,
-          bookingId,
-          userId,
           createdBooking.event.availableSeats
         );
       }
@@ -156,13 +154,11 @@ export class BookingService {
     }
 
     // Get updated event data and broadcast cancellation via WebSocket
-    if (booking.event && booking.userId) {
+    if (booking.event) {
       const updatedEvent = await EventService.getEventById(booking.event.id);
       if (updatedEvent) {
         WebSocketManager.broadcastBookingCancelled(
           booking.event.id,
-          bookingId,
-          booking.userId,
           updatedEvent.availableSeats
         );
       }

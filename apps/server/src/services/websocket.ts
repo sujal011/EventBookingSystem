@@ -18,8 +18,6 @@ export interface SeatUpdateMessage {
 export interface BookingUpdateMessage {
   type: "booking_created" | "booking_cancelled";
   eventId: number;
-  bookingId: string;
-  userId: number;
   availableSeats: number;
   timestamp: string;
 }
@@ -147,15 +145,11 @@ export class WebSocketManager {
    */
   static broadcastBookingCreated(
     eventId: number,
-    bookingId: string,
-    userId: number,
     availableSeats: number
   ): void {
     const message: BookingUpdateMessage = {
       type: "booking_created",
       eventId,
-      bookingId,
-      userId,
       availableSeats,
       timestamp: new Date().toISOString(),
     };
@@ -168,15 +162,11 @@ export class WebSocketManager {
    */
   static broadcastBookingCancelled(
     eventId: number,
-    bookingId: string,
-    userId: number,
     availableSeats: number
   ): void {
     const message: BookingUpdateMessage = {
       type: "booking_cancelled",
       eventId,
-      bookingId,
-      userId,
       availableSeats,
       timestamp: new Date().toISOString(),
     };

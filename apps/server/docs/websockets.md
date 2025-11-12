@@ -128,24 +128,22 @@ ws://localhost:3000/ws/events/{eventId}?token=<jwt_token>
 {
   "type": "booking_created",
   "eventId": 123,
-  "bookingId": "BK-ABC123",
-  "userId": 456,
   "availableSeats": 44,
   "timestamp": "2024-11-11T10:30:00.000Z"
 }
 ```
+**Note**: For privacy and security, `bookingId` and `userId` are NOT broadcast to all clients.
 
 #### 6. Booking Cancelled
 ```json
 {
   "type": "booking_cancelled",
   "eventId": 123,
-  "bookingId": "BK-ABC123",
-  "userId": 456,
   "availableSeats": 45,
   "timestamp": "2024-11-11T10:30:00.000Z"
 }
 ```
+**Note**: For privacy and security, `bookingId` and `userId` are NOT broadcast to all clients.
 
 #### 7. Pong Response
 ```json
