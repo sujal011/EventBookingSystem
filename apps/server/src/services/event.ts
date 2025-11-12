@@ -1,6 +1,7 @@
 import { eq, asc, gte, and } from "drizzle-orm";
 import { db, events, users, type Event, type NewEvent } from "../db";
 import type { CreateEventData, UpdateEventData, EventQueryParams } from "../schemas/event";
+import { WebSocketManager } from "./websocket";
 
 export interface EventWithCreator extends Event {
   creator?: {
@@ -254,6 +255,15 @@ export class EventService {
     const updatedEvent = await this.getEventById(id);
     if (!updatedEvent) {
       throw new Error("Failed to retrieve updated event");
+    }
+
+    // Broadcast seat update if capacity or available seats changed
+    if (eventData.seatCapacity !== undefined) {
+      WebSocketManager.broadcastSeatUpdate(
+        id,
+        updatedEvent.availableSeats,
+        updatedEvent.seatCapacity
+      );
     }
 
     return updatedEvent;

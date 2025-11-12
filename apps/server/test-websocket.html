@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>WebSocket Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+    }
+    .message {
+      background: #f0f0f0;
+      padding: 10px;
+      margin: 5px 0;
+      border-radius: 5px;
+    }
+    .sent { background: #e3f2fd; }
+    .received { background: #f1f8e9; }
+    .error { background: #ffebee; }
+    input, button {
+      padding: 10px;
+      margin: 5px;
+    }
+    #messages {
+      height: 400px;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin: 10px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔌 WebSocket Test</h1>
+  
+  <div>
+    <input type="text" id="token" placeholder="Enter JWT Token" style="width: 400px">
+    <input type="number" id="eventId" placeholder="Event ID" value="1">
+    <button onclick="connect()">Connect</button>
+    <button onclick="disconnect()">Disconnect</button>
+  </div>
+  
+  <div>
+    <button onclick="sendPing()">Send Ping</button>
+    <button onclick="subscribe()">Subscribe to Event 2</button>
+    <button onclick="getStats()">Get Stats</button>
+  </div>
+  
+  <div id="messages"></div>
+  
+  <script>
+    let ws = null;
+    
+    function addMessage(text, type = 'received') {
+      const div = document.createElement('div');
+      div.className = `message ${type}`;
+      div.textContent = text;
+      document.getElementById('messages').appendChild(div);
+      document.getElementById('messages').scrollTop = 999999;
+    }
+    
+    function connect() {
+      const token = document.getElementById('token').value;
+      const eventId = document.getElementById('eventId').value;
+      
+      if (!token) {
+        alert('Please enter a JWT token');
+        return;
+      }
+      
+      const url = `ws://localhost:3000/ws/events/${eventId}?token=${token}`;
+      addMessage(`Connecting to ${url}...`, 'sent');
+      
+      ws = new WebSocket(url);
+      
+      ws.onopen = () => {
+        addMessage('✅ Connected!', 'received');
+      };
+      
+      ws.onmessage = (event) => {
+        const message = JSON.parse(event.data);
+        addMessage(`📨 ${JSON.stringify(message, null, 2)}`, 'received');
+      };
+      
+      ws.onclose = (event) => {
+        addMessage(`❌ Disconnected - Code: ${event.code}, Reason: ${event.reason || 'No reason provided'}`, 'error');
+      };
+      
+      ws.onerror = (error) => {
+        addMessage(`❌ Error: ${error.message || 'Unknown error'}`, 'error');
+      };
+    }
+    
+    function disconnect() {
+      if (ws) {
+        ws.close();
+        ws = null;
+      }
+    }
+    
+    function sendPing() {
+      if (!ws) {
+        alert('Not connected');
+        return;
+      }
+      const message = { type: 'ping' };
+      ws.send(JSON.stringify(message));
+      addMessage(`📤 Sent: ${JSON.stringify(message)}`, 'sent');
+    }
+    
+    function subscribe() {
+      if (!ws) {
+        alert('Not connected');
+        return;
+      }
+      const message = { type: 'subscribe_event', eventId: 2 };
+      ws.send(JSON.stringify(message));
+      addMessage(`📤 Sent: ${JSON.stringify(message)}`, 'sent');
+    }
+    
+    function getStats() {
+      if (!ws) {
+        alert('Not connected');
+        return;
+      }
+      const message = { type: 'get_stats' };
+      ws.send(JSON.stringify(message));
+      addMessage(`📤 Sent: ${JSON.stringify(message)}`, 'sent');
+    }
+  </script>
+</body>
+</html>

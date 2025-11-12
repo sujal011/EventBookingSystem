@@ -35,7 +35,9 @@ export const bookings = pgTable('bookings', {
   createdAt: timestamp('created_at').defaultNow(),
   cancelledAt: timestamp('cancelled_at')
 }, (table) => ({
-  uniqueUserEvent: unique().on(table.userId, table.eventId)
+  // Note: Partial unique index created via migration (0002_fix_booking_constraint.sql)
+  // Ensures user can only have ONE confirmed booking per event
+  // But allows rebooking after cancellation
 }));
 
 // Booking logs table

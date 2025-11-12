@@ -51,3 +51,9 @@ temp
 
 
 .kiro/
+
+.vscode/
+.idea/
+node_modules/
+dist/
+build/

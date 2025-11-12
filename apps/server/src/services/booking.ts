@@ -2,6 +2,7 @@ import { eq, and, sql } from "drizzle-orm";
 import { db, bookings, events, users, type Booking } from "../db";
 import type { CreateBookingData } from "../schemas/booking";
 import { EventService } from "./event";
+import { WebSocketManager } from "./websocket";
 
 export interface BookingWithDetails extends Booking {
   event?: {
@@ -95,6 +96,16 @@ export class BookingService {
         throw new Error("Failed to retrieve created booking");
       }
 
+      // Broadcast booking creation and seat update via WebSocket
+      if (createdBooking.event) {
+        WebSocketManager.broadcastBookingCreated(
+          eventId,
+          bookingId,
+          userId,
+          createdBooking.event.availableSeats
+        );
+      }
+
       return createdBooking;
     } catch (error: any) {
       // Handle database errors
@@ -142,6 +153,19 @@ export class BookingService {
     const success = (result.rows[0] as any)?.success;
     if (!success) {
       throw new Error("Failed to cancel booking - booking may already be cancelled");
+    }
+
+    // Get updated event data and broadcast cancellation via WebSocket
+    if (booking.event && booking.userId) {
+      const updatedEvent = await EventService.getEventById(booking.event.id);
+      if (updatedEvent) {
+        WebSocketManager.broadcastBookingCancelled(
+          booking.event.id,
+          bookingId,
+          booking.userId,
+          updatedEvent.availableSeats
+        );
+      }
     }
   }
 
