@@ -1,24 +1,63 @@
 import { z } from "zod";
 
-// Base event schema for validation
+// Base event schema for validation (handles FormData)
 export const createEventSchema = z.object({
-  name: z.string()
-    .min(1, "Event name is required")
-    .max(255, "Event name must be less than 255 characters")
-    .trim(),
-  description: z.string()
-    .max(1000, "Description must be less than 1000 characters")
-    .optional()
+  name: z.union([z.string(), z.null()])
+    .transform(val => val || "")
+    .pipe(
+      z.string()
+        .min(1, "Event name is required")
+        .max(255, "Event name must be less than 255 characters")
+        .trim()
+    ),
+  description: z.union([z.string(), z.null()])
+    .transform(val => !val || val === "" ? null : val)
+    .pipe(
+      z.string()
+        .max(1000, "Description must be less than 1000 characters")
+        .nullable()
+    ),
+  imageUrl: z.union([z.instanceof(File), z.null(), z.string()])
+    .transform(val => {
+      if (val instanceof File) return val;
+      if (val === null || val === "") return null;
+      return null;
+    })
     .nullable(),
-  eventDate: z.string()
-    .datetime("Invalid date format. Use ISO 8601 format")
-    .refine((date) => new Date(date) > new Date(), {
-      message: "Event date must be in the future"
-    }),
-  seatCapacity: z.number()
-    .int("Seat capacity must be an integer")
-    .min(1, "Seat capacity must be at least 1")
-    .max(10000, "Seat capacity cannot exceed 10,000")
+  eventDate: z.union([z.string(), z.null()])
+    .transform(val => val || "")
+    .pipe(
+      z.string()
+        .min(1, "Event date is required")
+        .refine((date) => {
+          const parsedDate = new Date(date);
+          return !isNaN(parsedDate.getTime());
+        }, {
+          message: "Invalid date format. Use ISO 8601 format"
+        })
+        .refine((date) => new Date(date) > new Date(), {
+          message: "Event date must be in the future"
+        })
+    ),
+  seatCapacity: z.union([z.string(), z.number(), z.null()])
+    .transform(val => {
+      if (typeof val === "number") return val.toString();
+      return val || "";
+    })
+    .pipe(
+      z.string()
+        .min(1, "Seat capacity is required")
+        .transform((val) => parseInt(val, 10))
+        .refine((val) => !isNaN(val) && Number.isInteger(val), {
+          message: "Seat capacity must be an integer"
+        })
+        .refine((val) => val >= 1, {
+          message: "Seat capacity must be at least 1"
+        })
+        .refine((val) => val <= 10000, {
+          message: "Seat capacity cannot exceed 10,000"
+        })
+    )
 });
 
 // Update event schema (allows partial updates)
@@ -32,6 +71,7 @@ export const updateEventSchema = z.object({
     .max(1000, "Description must be less than 1000 characters")
     .optional()
     .nullable(),
+  imageUrl: z.file().optional().nullable(),
   eventDate: z.string()
     .datetime("Invalid date format. Use ISO 8601 format")
     .refine((date) => new Date(date) > new Date(), {

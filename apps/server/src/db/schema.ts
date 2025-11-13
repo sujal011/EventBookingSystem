@@ -16,6 +16,7 @@ export const users = pgTable('users', {
 export const events = pgTable('events', {
   id: serial('id').primaryKey(),
   name: varchar('name', { length: 255 }).notNull(),
+  imageUrl: text('image_url'),
   description: text('description'),
   eventDate: timestamp('event_date').notNull(),
   seatCapacity: integer('seat_capacity').notNull(),

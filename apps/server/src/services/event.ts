@@ -2,6 +2,7 @@ import { eq, asc, gte, and } from "drizzle-orm";
 import { db, events, users, type Event, type NewEvent } from "../db";
 import type { CreateEventData, UpdateEventData, EventQueryParams } from "../schemas/event";
 import { WebSocketManager } from "./websocket";
+import { uploadToCloudinary } from "@/lib";
 
 export interface EventWithCreator extends Event {
   creator?: {
@@ -30,10 +31,25 @@ export class EventService {
     if (eventDate <= new Date()) {
       throw new Error("Event date must be in the future");
     }
+    let imageUrl: string | null = null;
+
+    if(eventData.imageUrl) {
+      const result = await uploadToCloudinary(eventData.imageUrl)
+      if(result.type === "error") {
+        const error = result.error;
+        throw new Error(error)
+      }
+      if(result.type === "success") {
+        if(result.url === undefined) throw new Error("Failed to upload image");
+        imageUrl = result.url
+      }
+    }
+
 
     const newEvent: NewEvent = {
       name: eventData.name,
       description: eventData.description || null,
+      imageUrl: imageUrl || null,
       eventDate: eventDate,
       seatCapacity: eventData.seatCapacity,
       availableSeats: eventData.seatCapacity, // Initially all seats are available
@@ -88,6 +104,7 @@ export class EventService {
         id: events.id,
         name: events.name,
         description: events.description,
+        imageUrl: events.imageUrl,
         eventDate: events.eventDate,
         seatCapacity: events.seatCapacity,
         availableSeats: events.availableSeats,
@@ -122,6 +139,7 @@ export class EventService {
         id: event.id,
         name: event.name,
         description: event.description,
+        imageUrl: event.imageUrl,
         eventDate: event.eventDate,
         seatCapacity: event.seatCapacity,
         availableSeats: event.availableSeats,
@@ -144,6 +162,7 @@ export class EventService {
         id: events.id,
         name: events.name,
         description: events.description,
+        imageUrl: events.imageUrl,
         eventDate: events.eventDate,
         seatCapacity: events.seatCapacity,
         availableSeats: events.availableSeats,
@@ -170,6 +189,7 @@ export class EventService {
       id: event.id,
       name: event.name,
       description: event.description,
+      imageUrl: event.imageUrl,
       eventDate: event.eventDate,
       seatCapacity: event.seatCapacity,
       availableSeats: event.availableSeats,
@@ -239,6 +259,20 @@ export class EventService {
     }
 
     updateData.updatedAt = new Date();
+    let imageUrl: string | null = null;
+
+    if(eventData.imageUrl) {
+      const result = await uploadToCloudinary(eventData.imageUrl)
+      if(result.type === "error") {
+        const error = result.error;
+        throw new Error(error)
+      }
+      if(result.type === "success") {
+        if(result.url === undefined) throw new Error("Failed to upload image");
+        imageUrl = result.url
+      }
+    }
+    updateData.imageUrl = imageUrl || null;
 
     // Update the event
     const updatedEvents = await db

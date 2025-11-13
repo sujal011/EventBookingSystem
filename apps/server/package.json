@@ -20,6 +20,7 @@
     "@neondatabase/serverless": "^1.0.2",
     "@types/bcrypt": "^6.0.0",
     "bcrypt": "^6.0.0",
+    "cloudinary": "^2.8.0",
     "dotenv": "catalog:",
     "drizzle-orm": "^0.44.7",
     "hono": "^4.10.3",
