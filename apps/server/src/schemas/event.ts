@@ -60,29 +60,85 @@ export const createEventSchema = z.object({
     )
 });
 
-// Update event schema (allows partial updates)
+// Update event schema (allows partial updates, handles FormData)
 export const updateEventSchema = z.object({
-  name: z.string()
-    .min(1, "Event name is required")
-    .max(255, "Event name must be less than 255 characters")
-    .trim()
-    .optional(),
-  description: z.string()
-    .max(1000, "Description must be less than 1000 characters")
-    .optional()
-    .nullable(),
-  imageUrl: z.file().optional().nullable(),
-  eventDate: z.string()
-    .datetime("Invalid date format. Use ISO 8601 format")
-    .refine((date) => new Date(date) > new Date(), {
-      message: "Event date must be in the future"
+  name: z.union([z.string(), z.null()])
+    .transform(val => val || undefined)
+    .pipe(
+      z.string()
+        .min(1, "Event name is required")
+        .max(255, "Event name must be less than 255 characters")
+        .trim()
+        .optional()
+    ),
+  description: z.union([z.string(), z.null()])
+    .transform(val => {
+      if (val === null || val === "" || val === undefined) return undefined;
+      return val;
+    })
+    .pipe(
+      z.string()
+        .max(1000, "Description must be less than 1000 characters")
+        .optional()
+    ),
+  imageUrl: z.union([z.instanceof(File), z.null(), z.string()])
+    .transform(val => {
+      if (val instanceof File) return val;
+      if (val === null || val === "" || val === undefined) return undefined;
+      return undefined;
     })
     .optional(),
-  seatCapacity: z.number()
-    .int("Seat capacity must be an integer")
-    .min(1, "Seat capacity must be at least 1")
-    .max(10000, "Seat capacity cannot exceed 10,000")
-    .optional()
+  eventDate: z.union([z.string(), z.null()])
+    .transform(val => val || undefined)
+    .pipe(
+      z.string()
+        .refine((date) => {
+          if (!date) return true; // Optional field
+          const parsedDate = new Date(date);
+          return !isNaN(parsedDate.getTime());
+        }, {
+          message: "Invalid date format. Use ISO 8601 format"
+        })
+        .refine((date) => {
+          if (!date) return true; // Optional field
+          return new Date(date) > new Date();
+        }, {
+          message: "Event date must be in the future"
+        })
+        .optional()
+    ),
+  seatCapacity: z.union([z.string(), z.number(), z.null()])
+    .transform(val => {
+      if (val === null || val === "" || val === undefined) return undefined;
+      if (typeof val === "number") return val.toString();
+      return val;
+    })
+    .pipe(
+      z.string()
+        .transform((val) => {
+          if (!val) return undefined;
+          return parseInt(val, 10);
+        })
+        .refine((val) => {
+          if (val === undefined) return true; // Optional field
+          return !isNaN(val) && Number.isInteger(val);
+        }, {
+          message: "Seat capacity must be an integer"
+        })
+        .refine((val) => {
+          if (val === undefined) return true; // Optional field
+          return val >= 1;
+        }, {
+          message: "Seat capacity must be at least 1"
+        })
+        .refine((val) => {
+          if (val === undefined) return true; // Optional field
+          return val <= 10000;
+        }, {
+          message: "Seat capacity cannot exceed 10,000"
+        })
+        .optional()
+    )
 });
 
 // Event query parameters schema
