@@ -12,10 +12,21 @@ export interface Event {
 }
 
 export interface Booking {
-  id: string;
-  eventId: string;
-  userName: string;
-  userEmail: string;
-  bookingDate: string;
+  bookingId: string;
+  eventId: number;
   status: 'confirmed' | 'cancelled';
+  createdAt: string;
+  cancelledAt: string | null;
+  event?: {
+    id: number;
+    name: string;
+    eventDate: string;
+    seatCapacity: number;
+    availableSeats: number;
+  };
+  user?: {
+    id: number;
+    name: string;
+    email: string;
+  };
 }

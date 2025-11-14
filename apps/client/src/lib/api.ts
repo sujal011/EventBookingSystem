@@ -132,4 +132,8 @@ export const bookingsApi = {
   getUserBookings: async () => {
     return authFetch('/api/bookings/user/me');
   },
+
+  getEventBookings: async (eventId: number) => {
+    return authFetch(`/api/bookings/admin/events/${eventId}`);
+  },
 };

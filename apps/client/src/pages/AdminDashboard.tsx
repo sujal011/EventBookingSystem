@@ -2,10 +2,11 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, BarChart3, Calendar, Mail } from "lucide-react";
+import { ArrowLeft, BarChart3, Calendar, Mail, Users } from "lucide-react";
 import Analytics from "@/components/admin/Analytics";
 import EventManagement from "@/components/admin/EventManagement";
 import EmailNotifications from "@/components/admin/EmailNotifications";
+import BookingsManagement from "@/components/admin/BookingsManagement";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -36,7 +37,7 @@ const AdminDashboard = () => {
 
       <div className="container mx-auto px-4 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full max-w-md grid-cols-3">
+          <TabsList className="grid w-full max-w-2xl grid-cols-4">
             <TabsTrigger value="analytics" className="gap-2">
               <BarChart3 className="h-4 w-4" />
               Analytics
@@ -44,6 +45,10 @@ const AdminDashboard = () => {
             <TabsTrigger value="events" className="gap-2">
               <Calendar className="h-4 w-4" />
               Events
+            </TabsTrigger>
+            <TabsTrigger value="bookings" className="gap-2">
+              <Users className="h-4 w-4" />
+              Bookings
             </TabsTrigger>
             <TabsTrigger value="emails" className="gap-2">
               <Mail className="h-4 w-4" />
@@ -57,6 +62,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="events" className="space-y-6">
             <EventManagement />
+          </TabsContent>
+
+          <TabsContent value="bookings" className="space-y-6">
+            <BookingsManagement />
           </TabsContent>
 
           <TabsContent value="emails" className="space-y-6">

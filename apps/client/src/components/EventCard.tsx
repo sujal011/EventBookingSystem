@@ -12,6 +12,8 @@ interface EventCardProps {
 export const EventCard = ({ event }: EventCardProps) => {
   const availableSeats = event.totalSeats - event.bookedSeats;
   const availabilityPercentage = (availableSeats / event.totalSeats) * 100;
+  const defaultImageUrl = "https://res.cloudinary.com/dgfrmrdvb/image/upload/v1763037592/wcepepsaphzlqycxdr0z.png";
+  const imageUrl = event.imageUrl || defaultImageUrl;
 
   const getAvailabilityStatus = () => {
     if (availableSeats === 0) {
@@ -37,6 +39,13 @@ export const EventCard = ({ event }: EventCardProps) => {
 
   return (
     <Card className="group overflow-hidden transition-all hover:shadow-lg">
+      <div className="relative aspect-video w-full overflow-hidden bg-muted">
+        <img 
+          src={imageUrl} 
+          alt={event.title}
+          className="h-full w-full object-cover transition-transform group-hover:scale-105"
+        />
+      </div>
       <CardHeader className="space-y-3">
         <div className="flex items-start justify-between gap-2">
           <Badge className={getCategoryColor()}>{event.category}</Badge>
