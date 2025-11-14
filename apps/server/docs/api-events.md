@@ -180,18 +180,16 @@ Update an existing event.
 **Path Parameters:**
 - `id`: Event ID (integer)
 
-**Request Body:** (All fields optional for partial updates)
-```json
-{
-  "name": "Updated Tech Conference 2024",
-  "description": "Updated description",
-  "imageUrl": null,
-  "eventDate": "2024-12-16T10:00:00.000Z",
-  "seatCapacity": 600
-}
-```
+**Request Format:** `multipart/form-data` (FormData)
 
-**Note:** The `imageUrl` field in update requests currently accepts `null` or a file object. For updating images via JSON, set to `null` to remove the image. For uploading a new image, use FormData format similar to the create endpoint.
+**Form Fields:** (All fields optional for partial updates)
+- `name` (string, optional): Updated event name
+- `description` (string, optional): Updated event description
+- `imageUrl` (file, optional): New event image file
+- `eventDate` (string, optional): Updated event date in ISO 8601 format
+- `seatCapacity` (string, optional): Updated number of seats
+
+**Note:** Only include the fields you want to update. Omitted fields will remain unchanged.
 
 **Business Rules:**
 - Cannot update events that have already occurred
@@ -202,12 +200,18 @@ Update an existing event.
 **Example Request:**
 ```bash
 curl -X PUT "http://localhost:3000/api/events/1" \
-  -H "Content-Type: application/json" \
   -H "Authorization: Bearer <jwt_token>" \
-  -d '{
-    "name": "Updated Tech Conference 2024",
-    "seatCapacity": 600
-  }'
+  -F "name=Updated Tech Conference 2024" \
+  -F "seatCapacity=600"
+```
+
+**Example with Image Update:**
+```bash
+curl -X PUT "http://localhost:3000/api/events/1" \
+  -H "Authorization: Bearer <jwt_token>" \
+  -F "name=Updated Tech Conference 2024" \
+  -F "imageUrl=@/path/to/new-image.jpg" \
+  -F "seatCapacity=600"
 ```
 
 **Example Response:**

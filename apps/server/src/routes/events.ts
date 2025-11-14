@@ -175,13 +175,34 @@ events.put(
   "/:id",
   authMiddleware,
   zValidator("param", eventIdSchema),
-  zValidator("json", updateEventSchema),
   async (c) => {
     try {
       const { id } = c.req.valid("param");
-      const eventData = c.req.valid("json");
       const user = c.get("user");
+      
+      // Parse FormData manually
+      const formData = await c.req.formData();
+      
+      // Extract fields from FormData
+      const rawData = {
+        name: formData.get("name"),
+        description: formData.get("description"),
+        imageUrl: formData.get("imageUrl"),
+        eventDate: formData.get("eventDate"),
+        seatCapacity: formData.get("seatCapacity")
+      };
 
+      // Validate with Zod
+      const validationResult = updateEventSchema.safeParse(rawData);
+      
+      if (!validationResult.success) {
+        return c.json({
+          success: false,
+          error: validationResult.error
+        }, 400);
+      }
+
+      const eventData = validationResult.data;
       const event = await EventService.updateEvent(id, eventData, user.id, user.role);
 
       return c.json({
