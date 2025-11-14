@@ -204,6 +204,7 @@ interface Event {
   id: number;
   name: string;
   description: string | null;
+  imageUrl: string | null;
   eventDate: Date;
   seatCapacity: number;
   availableSeats: number;
@@ -293,16 +294,14 @@ curl -X DELETE http://localhost:3000/api/bookings/BK-1K2L3M4N5O-ABC123 \
 ### 5. Admin Operations
 
 ```bash
-# Create an event (admin only)
+# Create an event (admin only) - with FormData for image upload
 curl -X POST http://localhost:3000/api/events \
-  -H "Content-Type: application/json" \
   -H "Authorization: Bearer <admin-jwt-token>" \
-  -d '{
-    "name": "Tech Conference 2024",
-    "description": "Annual technology conference",
-    "eventDate": "2024-12-15T10:00:00.000Z",
-    "seatCapacity": 500
-  }'
+  -F "name=Tech Conference 2024" \
+  -F "description=Annual technology conference" \
+  -F "eventDate=2024-12-15T10:00:00.000Z" \
+  -F "seatCapacity=500" \
+  -F "imageUrl=@/path/to/image.jpg"
 
 # View event bookings (admin only)
 curl -X GET http://localhost:3000/api/bookings/admin/events/1 \

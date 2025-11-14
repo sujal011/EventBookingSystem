@@ -134,6 +134,17 @@ events.post(
       console.error("Error creating event:", error);
       
       if (error instanceof Error) {
+        // Handle image upload errors
+        if (error.message.includes("Image upload failed") || error.message.includes("upload") || error.message.includes("Cloudinary")) {
+          return c.json({
+            error: {
+              code: "IMAGE_UPLOAD_FAILED",
+              message: error.message,
+              timestamp: new Date().toISOString()
+            }
+          }, 400);
+        }
+        
         // Handle known business logic errors
         if (error.message.includes("future")) {
           return c.json({
@@ -181,6 +192,17 @@ events.put(
       console.error("Error updating event:", error);
       
       if (error instanceof Error) {
+        // Handle image upload errors
+        if (error.message.includes("Image upload failed") || error.message.includes("upload") || error.message.includes("Cloudinary")) {
+          return c.json({
+            error: {
+              code: "IMAGE_UPLOAD_FAILED",
+              message: error.message,
+              timestamp: new Date().toISOString()
+            }
+          }, 400);
+        }
+        
         // Handle known business logic errors
         if (error.message.includes("not found")) {
           return c.json({

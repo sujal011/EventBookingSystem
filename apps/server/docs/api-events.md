@@ -48,6 +48,7 @@ curl -X GET "http://localhost:3000/api/events?limit=10&upcoming=true"
         "id": 1,
         "name": "Tech Conference 2024",
         "description": "Annual technology conference",
+        "imageUrl": "https://res.cloudinary.com/your-cloud/image/upload/v1234567890/event-image.jpg",
         "eventDate": "2024-12-15T10:00:00.000Z",
         "seatCapacity": 500,
         "availableSeats": 450,
@@ -91,6 +92,7 @@ curl -X GET "http://localhost:3000/api/events/1"
     "id": 1,
     "name": "Tech Conference 2024",
     "description": "Annual technology conference",
+    "imageUrl": "https://res.cloudinary.com/your-cloud/image/upload/v1234567890/event-image.jpg",
     "eventDate": "2024-12-15T10:00:00.000Z",
     "seatCapacity": 500,
     "availableSeats": 450,
@@ -114,34 +116,34 @@ Create a new event.
 
 **Authentication:** Required (Admin only)
 
-**Request Body:**
-```json
-{
-  "name": "Tech Conference 2024",
-  "description": "Annual technology conference",
-  "eventDate": "2024-12-15T10:00:00.000Z",
-  "seatCapacity": 500
-}
-```
+**Request Format:** `multipart/form-data` (FormData)
+
+**Form Fields:**
+- `name` (string): Event name
+- `description` (string, optional): Event description
+- `imageUrl` (file, optional): Event image file
+- `eventDate` (string): Event date in ISO 8601 format
+- `seatCapacity` (string): Number of seats
 
 **Validation Rules:**
 - `name`: Required, 1-255 characters
 - `description`: Optional, max 1000 characters
+- `imageUrl`: Optional, image file (uploaded to Cloudinary)
 - `eventDate`: Required, must be in the future, ISO 8601 format
 - `seatCapacity`: Required, integer between 1-10,000
 
 **Example Request:**
 ```bash
 curl -X POST "http://localhost:3000/api/events" \
-  -H "Content-Type: application/json" \
   -H "Authorization: Bearer <jwt_token>" \
-  -d '{
-    "name": "Tech Conference 2024",
-    "description": "Annual technology conference",
-    "eventDate": "2024-12-15T10:00:00.000Z",
-    "seatCapacity": 500
-  }'
+  -F "name=Tech Conference 2024" \
+  -F "description=Annual technology conference" \
+  -F "eventDate=2024-12-15T10:00:00.000Z" \
+  -F "seatCapacity=500" \
+  -F "imageUrl=@/path/to/event-image.jpg"
 ```
+
+**Note:** The `imageUrl` field accepts an image file which will be uploaded to Cloudinary and the URL will be stored in the database.
 
 **Example Response:**
 ```json
@@ -151,6 +153,7 @@ curl -X POST "http://localhost:3000/api/events" \
     "id": 1,
     "name": "Tech Conference 2024",
     "description": "Annual technology conference",
+    "imageUrl": "https://res.cloudinary.com/your-cloud/image/upload/v1234567890/event-image.jpg",
     "eventDate": "2024-12-15T10:00:00.000Z",
     "seatCapacity": 500,
     "availableSeats": 500,
@@ -182,10 +185,13 @@ Update an existing event.
 {
   "name": "Updated Tech Conference 2024",
   "description": "Updated description",
+  "imageUrl": null,
   "eventDate": "2024-12-16T10:00:00.000Z",
   "seatCapacity": 600
 }
 ```
+
+**Note:** The `imageUrl` field in update requests currently accepts `null` or a file object. For updating images via JSON, set to `null` to remove the image. For uploading a new image, use FormData format similar to the create endpoint.
 
 **Business Rules:**
 - Cannot update events that have already occurred
@@ -212,6 +218,7 @@ curl -X PUT "http://localhost:3000/api/events/1" \
     "id": 1,
     "name": "Updated Tech Conference 2024",
     "description": "Annual technology conference",
+    "imageUrl": "https://res.cloudinary.com/your-cloud/image/upload/v1234567890/event-image.jpg",
     "eventDate": "2024-12-15T10:00:00.000Z",
     "seatCapacity": 600,
     "availableSeats": 550,
@@ -277,6 +284,7 @@ All endpoints return structured error responses:
 - `NOT_FOUND` (404): Event not found
 - `VALIDATION_ERROR` (400): Invalid input data
 - `CONFLICT` (409): Business rule violation (e.g., deleting event with bookings)
+- `IMAGE_UPLOAD_FAILED` (400): Image upload to Cloudinary failed
 - `INTERNAL_ERROR` (500): Server error
 
 ### Validation Error Examples
@@ -303,6 +311,17 @@ All endpoints return structured error responses:
 }
 ```
 
+**Image Upload Error:**
+```json
+{
+  "error": {
+    "code": "IMAGE_UPLOAD_FAILED",
+    "message": "Image upload failed: Invalid image file",
+    "timestamp": "2024-01-15T08:00:00.000Z"
+  }
+}
+```
+
 ## Data Models
 
 ### Event Object
@@ -312,6 +331,7 @@ interface Event {
   id: number;
   name: string;
   description: string | null;
+  imageUrl: string | null;
   eventDate: Date;
   seatCapacity: number;
   availableSeats: number;
