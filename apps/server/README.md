@@ -1,3 +1,13 @@
+### Docker Image Build command 
+```sh
+docker build -t event-booking-system-server:latest -f apps/server/Dockerfile .
+```
+
+### Docker container run command
+```sh
+docker run -d -p 3000:3000 --name ebs-server-container event-booking-system-server:latest
+```
+
 # Event Booking System - Backend API
 
 A robust, real-time event booking system built with Bun, Hono, PostgreSQL, and Drizzle ORM. Features JWT authentication, atomic booking operations, WebSocket updates, and comprehensive API documentation.
