@@ -18,4 +18,10 @@ coverage
 .git
 .gitignore
 README.md
-docs
+
+docs/
+drizzle/
+scripts/
+
+be-readme.md
+test-websocket.html
