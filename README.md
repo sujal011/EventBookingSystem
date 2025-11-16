@@ -1,3 +1,12 @@
+## TODOS
+
+- fix image upload
+- add image preview
+- add admin stats feature
+- websockets implemented?
+- add a redis cache layer
+
+
 # EventBookingSystem
 
 A modern, full-stack event booking platform built with cutting-edge technologies. This monorepo combines a powerful backend API with a beautiful, responsive frontend to deliver a seamless event management experience.
