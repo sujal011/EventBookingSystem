@@ -16,7 +16,7 @@ app.use(logger());
 app.use(
 	"/*",
 	cors({
-		origin: process.env.CORS_ORIGIN || ["http://localhost:8080","https://preview--pure-front-focus.lovable.app"],
+		origin: process.env.CORS_ORIGIN || ["http://localhost:8080","https://preview--pure-front-focus.lovable.app","https://event-booking-system011.vercel.app"],
 		allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
 	}),
 );

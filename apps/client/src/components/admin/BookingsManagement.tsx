@@ -5,9 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Users, Calendar, TrendingUp, CheckCircle, XCircle, Loader2 } from "lucide-react";
+import { Users, Calendar, TrendingUp, CheckCircle, XCircle, Loader2, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Booking } from "@/types/event";
+import * as XLSX from 'xlsx';
 
 const BookingsManagement = () => {
   const [events, setEvents] = useState<any[]>([]);
@@ -105,6 +106,65 @@ const BookingsManagement = () => {
         variant: "destructive",
       });
     }
+  };
+
+  const handleExportToExcel = () => {
+    if (bookings.length === 0) {
+      toast({
+        title: "No Data",
+        description: "There are no bookings to export.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Prepare data for Excel
+    const exportData = bookings.map((booking) => ({
+      'Booking ID': booking.bookingId,
+      'Name': booking.user?.name || 'N/A',
+      'Email': booking.user?.email || 'N/A',
+      'Status': booking.status,
+      'Booked On': new Date(booking.createdAt).toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      }),
+      'Cancelled On': booking.cancelledAt 
+        ? new Date(booking.cancelledAt).toLocaleDateString() 
+        : '',
+    }));
+
+    // Create worksheet
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    
+    // Set column widths
+    ws['!cols'] = [
+      { wch: 15 }, // Booking ID
+      { wch: 20 }, // Name
+      { wch: 30 }, // Email
+      { wch: 12 }, // Status
+      { wch: 20 }, // Booked On
+      { wch: 15 }, // Cancelled On
+    ];
+
+    // Create workbook
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Bookings');
+
+    // Generate filename with event name and date
+    const eventName = selectedEvent?.name.replace(/[^a-z0-9]/gi, '_') || 'event';
+    const date = new Date().toISOString().split('T')[0];
+    const filename = `${eventName}_bookings_${date}.xlsx`;
+
+    // Save file
+    XLSX.writeFile(wb, filename);
+
+    toast({
+      title: "Export Successful",
+      description: `Exported ${bookings.length} bookings to ${filename}`,
+    });
   };
 
   const selectedEvent = events.find(e => e.id === selectedEventId);
@@ -213,10 +273,22 @@ const BookingsManagement = () => {
           {/* Bookings Table */}
           <Card>
             <CardHeader>
-              <CardTitle>Booking Details</CardTitle>
-              <CardDescription>
-                All bookings for {selectedEvent.name}
-              </CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Booking Details</CardTitle>
+                  <CardDescription>
+                    All bookings for {selectedEvent.name}
+                  </CardDescription>
+                </div>
+                <Button
+                  onClick={handleExportToExcel}
+                  disabled={bookings.length === 0 || bookingsLoading}
+                  variant="outline"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Export to Excel
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               {bookingsLoading ? (

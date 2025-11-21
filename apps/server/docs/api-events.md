@@ -121,14 +121,14 @@ Create a new event.
 **Form Fields:**
 - `name` (string): Event name
 - `description` (string, optional): Event description
-- `imageUrl` (file, optional): Event image file
+- `imageFile` (file, optional): Event image file
 - `eventDate` (string): Event date in ISO 8601 format
 - `seatCapacity` (string): Number of seats
 
 **Validation Rules:**
 - `name`: Required, 1-255 characters
 - `description`: Optional, max 1000 characters
-- `imageUrl`: Optional, image file (uploaded to Cloudinary)
+- `imageFile`: Optional, image file (uploaded to Cloudinary)
 - `eventDate`: Required, must be in the future, ISO 8601 format
 - `seatCapacity`: Required, integer between 1-10,000
 
@@ -140,10 +140,10 @@ curl -X POST "http://localhost:3000/api/events" \
   -F "description=Annual technology conference" \
   -F "eventDate=2024-12-15T10:00:00.000Z" \
   -F "seatCapacity=500" \
-  -F "imageUrl=@/path/to/event-image.jpg"
+  -F "imageFile=@/path/to/event-image.jpg"
 ```
 
-**Note:** The `imageUrl` field accepts an image file which will be uploaded to Cloudinary and the URL will be stored in the database.
+**Note:** The `imageFile` field accepts an image file which will be uploaded to Cloudinary and the URL will be stored in the database.
 
 **Example Response:**
 ```json
@@ -185,7 +185,7 @@ Update an existing event.
 **Form Fields:** (All fields optional for partial updates)
 - `name` (string, optional): Updated event name
 - `description` (string, optional): Updated event description
-- `imageUrl` (file, optional): New event image file
+- `imageFile` (file, optional): New event image file
 - `eventDate` (string, optional): Updated event date in ISO 8601 format
 - `seatCapacity` (string, optional): Updated number of seats
 
@@ -210,7 +210,7 @@ curl -X PUT "http://localhost:3000/api/events/1" \
 curl -X PUT "http://localhost:3000/api/events/1" \
   -H "Authorization: Bearer <jwt_token>" \
   -F "name=Updated Tech Conference 2024" \
-  -F "imageUrl=@/path/to/new-image.jpg" \
+  -F "imageFile=@/path/to/new-image.jpg" \
   -F "seatCapacity=600"
 ```
 
