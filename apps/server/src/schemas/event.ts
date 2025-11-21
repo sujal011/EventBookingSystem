@@ -17,7 +17,7 @@ export const createEventSchema = z.object({
         .max(1000, "Description must be less than 1000 characters")
         .nullable()
     ),
-  imageUrl: z.union([z.instanceof(File), z.null(), z.string()])
+  imageFile: z.union([z.instanceof(File), z.null(), z.string()])
     .transform(val => {
       if (val instanceof File) return val;
       if (val === null || val === "") return null;
@@ -81,7 +81,7 @@ export const updateEventSchema = z.object({
         .max(1000, "Description must be less than 1000 characters")
         .optional()
     ),
-  imageUrl: z.union([z.instanceof(File), z.null(), z.string()])
+  imageFile: z.union([z.instanceof(File), z.null(), z.string()])
     .transform(val => {
       if (val instanceof File) return val;
       if (val === null || val === "" || val === undefined) return undefined;
