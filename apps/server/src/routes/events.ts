@@ -108,7 +108,7 @@ events.post(
       const rawData = {
         name: formData.get("name"),
         description: formData.get("description"),
-        imageUrl: formData.get("imageUrl"),
+        imageFile: formData.get("imageFile"),
         eventDate: formData.get("eventDate"),
         seatCapacity: formData.get("seatCapacity")
       };
@@ -187,7 +187,7 @@ events.put(
       const rawData = {
         name: formData.get("name"),
         description: formData.get("description"),
-        imageUrl: formData.get("imageUrl"),
+        imageFile: formData.get("imageFile"),
         eventDate: formData.get("eventDate"),
         seatCapacity: formData.get("seatCapacity")
       };

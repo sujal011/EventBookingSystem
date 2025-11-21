@@ -301,7 +301,7 @@ curl -X POST http://localhost:3000/api/events \
   -F "description=Annual technology conference" \
   -F "eventDate=2024-12-15T10:00:00.000Z" \
   -F "seatCapacity=500" \
-  -F "imageUrl=@/path/to/image.jpg"
+  -F "imageFile=@/path/to/image.jpg"
 
 # View event bookings (admin only)
 curl -X GET http://localhost:3000/api/bookings/admin/events/1 \
