@@ -65,7 +65,8 @@ const EventManagement = () => {
     const data = new FormData();
     data.append('name', formData.name);
     if (formData.description) data.append('description', formData.description);
-    data.append('eventDate', formData.eventDate);
+    // Convert local datetime to ISO string
+    data.append('eventDate', new Date(formData.eventDate).toISOString());
     data.append('seatCapacity', formData.seatCapacity?.toString() || '50');
     if (imageFile) data.append('imageUrl', imageFile);
 
@@ -97,7 +98,8 @@ const EventManagement = () => {
     const data = new FormData();
     if (formData.name) data.append('name', formData.name);
     if (formData.description) data.append('description', formData.description);
-    if (formData.eventDate) data.append('eventDate', formData.eventDate);
+    // Convert local datetime to ISO string
+    if (formData.eventDate) data.append('eventDate', new Date(formData.eventDate).toISOString());
     if (formData.seatCapacity) data.append('seatCapacity', formData.seatCapacity.toString());
     if (imageFile) data.append('imageUrl', imageFile);
 
@@ -144,10 +146,19 @@ const EventManagement = () => {
 
   const startEdit = (event: any) => {
     setEditingId(event.id);
+    // Convert ISO date to local datetime-local format (YYYY-MM-DDTHH:mm)
+    const localDate = new Date(event.eventDate);
+    const year = localDate.getFullYear();
+    const month = String(localDate.getMonth() + 1).padStart(2, '0');
+    const day = String(localDate.getDate()).padStart(2, '0');
+    const hours = String(localDate.getHours()).padStart(2, '0');
+    const minutes = String(localDate.getMinutes()).padStart(2, '0');
+    const localDateTimeString = `${year}-${month}-${day}T${hours}:${minutes}`;
+    
     setFormData({
       name: event.name,
       description: event.description,
-      eventDate: event.eventDate,
+      eventDate: localDateTimeString,
       seatCapacity: event.seatCapacity,
     });
     setIsCreating(false);
@@ -220,8 +231,8 @@ const EventManagement = () => {
                     <Input
                       id="eventDate"
                       type="datetime-local"
-                      value={formData.eventDate ? new Date(formData.eventDate).toISOString().slice(0, 16) : ''}
-                      onChange={(e) => setFormData({ ...formData, eventDate: new Date(e.target.value).toISOString() })}
+                      value={formData.eventDate ? formData.eventDate.slice(0, 16) : ''}
+                      onChange={(e) => setFormData({ ...formData, eventDate: e.target.value })}
                       required
                     />
                   </div>
