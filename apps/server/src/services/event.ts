@@ -33,8 +33,8 @@ export class EventService {
     }
     let imageUrl: string | null = null;
 
-    if(eventData.imageUrl) {
-      const result = await uploadToCloudinary(eventData.imageUrl)
+    if(eventData.imageFile) {
+      const result = await uploadToCloudinary(eventData.imageFile)
       if(result.type === "error") {
         const error = result.error;
         throw new Error(error)
@@ -261,8 +261,8 @@ export class EventService {
     updateData.updatedAt = new Date();
     let imageUrl: string | null = null;
 
-    if(eventData.imageUrl) {
-      const result = await uploadToCloudinary(eventData.imageUrl)
+    if(eventData.imageFile) {
+      const result = await uploadToCloudinary(eventData.imageFile)
       if(result.type === "error") {
         const error = result.error;
         throw new Error(error)
