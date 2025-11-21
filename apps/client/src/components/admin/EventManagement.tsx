@@ -67,7 +67,7 @@ const EventManagement = () => {
     if (formData.description) data.append('description', formData.description);
     data.append('eventDate', formData.eventDate);
     data.append('seatCapacity', formData.seatCapacity?.toString() || '50');
-    if (imageFile) data.append('imageUrl', imageFile);
+    if (imageFile) data.append('imageFile', imageFile);
 
     try {
       const response = await eventsApi.create(data);
@@ -99,7 +99,7 @@ const EventManagement = () => {
     if (formData.description) data.append('description', formData.description);
     if (formData.eventDate) data.append('eventDate', formData.eventDate);
     if (formData.seatCapacity) data.append('seatCapacity', formData.seatCapacity.toString());
-    if (imageFile) data.append('imageUrl', imageFile);
+    if (imageFile) data.append('imageFile', imageFile);
 
     try {
       const response = await eventsApi.update(editingId, data);
