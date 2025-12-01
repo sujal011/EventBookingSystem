@@ -24,7 +24,8 @@ export class EventService {
    */
   static async createEvent(
     eventData: CreateEventData,
-    createdBy: number
+    createdBy: number,
+    imageBuffer?: Buffer
   ): Promise<EventWithCreator> {
     // Validate that the event date is in the future
     const eventDate = new Date(eventData.eventDate);
@@ -33,18 +34,13 @@ export class EventService {
     }
     let imageUrl: string | null = null;
 
-    if(eventData.imageFile) {
-      const result = await uploadToCloudinary(eventData.imageFile)
+    if(imageBuffer) {
+      const result = await uploadToCloudinary(imageBuffer);
       if(result.type === "error") {
-        const error = result.error;
-        throw new Error(error)
+        throw new Error(result.error);
       }
-      if(result.type === "success") {
-        if(result.url === undefined) throw new Error("Failed to upload image");
-        imageUrl = result.url
-      }
+      imageUrl = result.url;
     }
-
 
     const newEvent: NewEvent = {
       name: eventData.name,
@@ -207,7 +203,8 @@ export class EventService {
     id: number,
     eventData: UpdateEventData,
     userId: number,
-    userRole: string
+    userRole: string,
+    imageBuffer?: Buffer
   ): Promise<EventWithCreator> {
     // Get the existing event
     const existingEvent = await this.getEventById(id);
@@ -259,20 +256,14 @@ export class EventService {
     }
 
     updateData.updatedAt = new Date();
-    let imageUrl: string | null = null;
 
-    if(eventData.imageFile) {
-      const result = await uploadToCloudinary(eventData.imageFile)
+    if(imageBuffer) {
+      const result = await uploadToCloudinary(imageBuffer);
       if(result.type === "error") {
-        const error = result.error;
-        throw new Error(error)
+        throw new Error(result.error);
       }
-      if(result.type === "success") {
-        if(result.url === undefined) throw new Error("Failed to upload image");
-        imageUrl = result.url
-      }
+      updateData.imageUrl = result.url;
     }
-    updateData.imageUrl = imageUrl || null;
 
     // Update the event
     const updatedEvents = await db

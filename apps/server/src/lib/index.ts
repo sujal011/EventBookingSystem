@@ -1,48 +1,32 @@
 import { v2 as cloudinary } from "cloudinary";
-import type { File } from "zod/v4/core";
 
-export async function uploadToCloudinary(file: File) : 
-    Promise<{type: 'success', url: string | undefined} | {type: 'error', error: string}> {
+// Configure Cloudinary
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+export async function uploadToCloudinary(buffer: Buffer): Promise<{type: 'success', url: string} | {type: 'error', error: string}> {
     try {
-        // Convert File to Buffer
-        const arrayBuffer = await file.arrayBuffer();
-        const buffer = Buffer.from(arrayBuffer);
+        // Convert buffer to base64 data URI
+        const base64Image = `data:image/jpeg;base64,${buffer.toString('base64')}`;
         
-        return new Promise((resolve)=>{
-            cloudinary.config({
-                cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-                api_key: process.env.CLOUDINARY_API_KEY,
-                api_secret: process.env.CLOUDINARY_API_SECRET,
-            });
-            
-            const uploadStream = cloudinary.uploader.upload_stream(
-                {
-                    upload_preset: "event_booking_system",
-                    resource_type: "image"
-                },
-                (err, uploadResult)=>{
-                    if(err){
-                        console.error("Cloudinary upload error:", err);
-                        return resolve({
-                            type: 'error',
-                            error: err.message || "Failed to upload image"
-                        });
-                    }
-                    return resolve({
-                        type: "success",
-                        url: uploadResult?.secure_url
-                    })
-                }
-            );
-            
-            // Write buffer to stream
-            uploadStream.end(buffer);
+        // Upload using classic method
+        const uploadResult = await cloudinary.uploader.upload(base64Image, {
+            upload_preset: "event_booking_system",
+            resource_type: "image"
         });
+
+        return {
+            type: "success",
+            url: uploadResult.secure_url
+        };
     } catch (error) {
-        console.error("Error processing file:", error);
+        console.error("Cloudinary upload error:", error);
         return {
             type: 'error',
-            error: error instanceof Error ? error.message : "Failed to process image file"
+            error: error instanceof Error ? error.message : "Failed to upload image"
         };
     }
 }
