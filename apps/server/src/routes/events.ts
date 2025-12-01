@@ -101,14 +101,13 @@ events.post(
     try {
       const user = c.get("user");
       
-      // Parse FormData manually
+      // Parse FormData
       const formData = await c.req.formData();
       
       // Extract fields from FormData
       const rawData = {
         name: formData.get("name"),
         description: formData.get("description"),
-        imageFile: formData.get("imageFile"),
         eventDate: formData.get("eventDate"),
         seatCapacity: formData.get("seatCapacity")
       };
@@ -123,8 +122,41 @@ events.post(
         }, 400);
       }
 
+      // Handle image file
+      let imageBuffer: Buffer | undefined;
+      const imageFile = formData.get("imageFile");
+      
+      if (imageFile && imageFile instanceof File) {
+        // Validate file type
+        if (!imageFile.type.startsWith('image/')) {
+          return c.json({
+            error: {
+              code: "INVALID_FILE_TYPE",
+              message: "Only image files are allowed",
+              timestamp: new Date().toISOString()
+            }
+          }, 400);
+        }
+        
+        // Validate file size (5MB limit)
+        const maxSize = 5 * 1024 * 1024;
+        if (imageFile.size > maxSize) {
+          return c.json({
+            error: {
+              code: "FILE_TOO_LARGE",
+              message: "File size cannot exceed 5MB",
+              timestamp: new Date().toISOString()
+            }
+          }, 400);
+        }
+        
+        // Convert File to Buffer
+        const arrayBuffer = await imageFile.arrayBuffer();
+        imageBuffer = Buffer.from(arrayBuffer);
+      }
+
       const eventData = validationResult.data;
-      const event = await EventService.createEvent(eventData, user.id);
+      const event = await EventService.createEvent(eventData, user.id, imageBuffer);
 
       return c.json({
         success: true,
@@ -180,14 +212,13 @@ events.put(
       const { id } = c.req.valid("param");
       const user = c.get("user");
       
-      // Parse FormData manually
+      // Parse FormData
       const formData = await c.req.formData();
       
       // Extract fields from FormData
       const rawData = {
         name: formData.get("name"),
         description: formData.get("description"),
-        imageFile: formData.get("imageFile"),
         eventDate: formData.get("eventDate"),
         seatCapacity: formData.get("seatCapacity")
       };
@@ -202,8 +233,41 @@ events.put(
         }, 400);
       }
 
+      // Handle image file
+      let imageBuffer: Buffer | undefined;
+      const imageFile = formData.get("imageFile");
+      
+      if (imageFile && imageFile instanceof File) {
+        // Validate file type
+        if (!imageFile.type.startsWith('image/')) {
+          return c.json({
+            error: {
+              code: "INVALID_FILE_TYPE",
+              message: "Only image files are allowed",
+              timestamp: new Date().toISOString()
+            }
+          }, 400);
+        }
+        
+        // Validate file size (5MB limit)
+        const maxSize = 5 * 1024 * 1024;
+        if (imageFile.size > maxSize) {
+          return c.json({
+            error: {
+              code: "FILE_TOO_LARGE",
+              message: "File size cannot exceed 5MB",
+              timestamp: new Date().toISOString()
+            }
+          }, 400);
+        }
+        
+        // Convert File to Buffer
+        const arrayBuffer = await imageFile.arrayBuffer();
+        imageBuffer = Buffer.from(arrayBuffer);
+      }
+
       const eventData = validationResult.data;
-      const event = await EventService.updateEvent(id, eventData, user.id, user.role);
+      const event = await EventService.updateEvent(id, eventData, user.id, user.role, imageBuffer);
 
       return c.json({
         success: true,
