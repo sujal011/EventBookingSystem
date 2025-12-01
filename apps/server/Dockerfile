@@ -22,6 +22,6 @@ WORKDIR /app
 COPY --from=builder /app/apps/server/dist ./dist
 
 # Run the bundled server
-CMD ["bun", "run", "dist/index.js"]
+ENTRYPOINT ["bun", "dist/index.js"]
 
-EXPOSE 3000
+EXPOSE 80
