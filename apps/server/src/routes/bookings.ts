@@ -31,7 +31,13 @@ bookings.post(
       const user = c.get("user");
 
       if (!user) {
-        return c.json({ error: "Authentication required" }, 401);
+        return c.json({ 
+          success: false,
+          error: { 
+            code: "UNAUTHORIZED",
+            message: "Authentication required" 
+          } 
+        }, 401);
       }
 
       // Validate booking data and business rules
@@ -55,15 +61,33 @@ bookings.post(
       
       // Handle specific error types
       if (error.message.includes("not found")) {
-        return c.json({ error: error.message }, 404);
+        return c.json({ 
+          success: false,
+          error: { 
+            code: "NOT_FOUND",
+            message: error.message 
+          } 
+        }, 404);
       }
       if (error.message.includes("already have a booking") || 
           error.message.includes("No seats available") ||
           error.message.includes("Cannot book past events")) {
-        return c.json({ error: error.message }, 409);
+        return c.json({ 
+          success: false,
+          error: { 
+            code: "BOOKING_CONFLICT",
+            message: error.message 
+          } 
+        }, 409);
       }
       
-      return c.json({ error: "Failed to create booking" }, 500);
+      return c.json({ 
+        success: false,
+        error: { 
+          code: "INTERNAL_ERROR",
+          message: "Failed to create booking" 
+        } 
+      }, 500);
     }
   }
 );
@@ -81,18 +105,36 @@ bookings.get(
       const user = c.get("user");
 
       if (!user) {
-        return c.json({ error: "Authentication required" }, 401);
+        return c.json({ 
+          success: false,
+          error: { 
+            code: "UNAUTHORIZED",
+            message: "Authentication required" 
+          } 
+        }, 401);
       }
 
       const booking = await BookingService.getBookingByBookingId(bookingId);
       
       if (!booking) {
-        return c.json({ error: "Booking not found" }, 404);
+        return c.json({ 
+          success: false,
+          error: { 
+            code: "NOT_FOUND",
+            message: "Booking not found" 
+          } 
+        }, 404);
       }
 
       // Check if user has permission to view this booking (owner or admin)
       if (user.role !== "admin" && booking.userId !== user.id) {
-        return c.json({ error: "You don't have permission to view this booking" }, 403);
+        return c.json({ 
+          success: false,
+          error: { 
+            code: "FORBIDDEN",
+            message: "You don't have permission to view this booking" 
+          } 
+        }, 403);
       }
 
       return c.json({
@@ -109,7 +151,13 @@ bookings.get(
       });
     } catch (error: any) {
       console.error("Error fetching booking:", error);
-      return c.json({ error: "Failed to fetch booking" }, 500);
+      return c.json({ 
+        success: false,
+        error: { 
+          code: "INTERNAL_ERROR",
+          message: "Failed to fetch booking" 
+        } 
+      }, 500);
     }
   }
 );
@@ -127,7 +175,13 @@ bookings.delete(
       const user = c.get("user");
 
       if (!user) {
-        return c.json({ error: "Authentication required" }, 401);
+        return c.json({ 
+          success: false,
+          error: { 
+            code: "UNAUTHORIZED",
+            message: "Authentication required" 
+          } 
+        }, 401);
       }
 
       await BookingService.cancelBooking(bookingId, user.id, user.role);
@@ -141,17 +195,41 @@ bookings.delete(
       
       // Handle specific error types
       if (error.message.includes("not found")) {
-        return c.json({ error: error.message }, 404);
+        return c.json({ 
+          success: false,
+          error: { 
+            code: "NOT_FOUND",
+            message: error.message 
+          } 
+        }, 404);
       }
       if (error.message.includes("don't have permission")) {
-        return c.json({ error: error.message }, 403);
+        return c.json({ 
+          success: false,
+          error: { 
+            code: "FORBIDDEN",
+            message: error.message 
+          } 
+        }, 403);
       }
       if (error.message.includes("already cancelled") ||
           error.message.includes("Cannot cancel")) {
-        return c.json({ error: error.message }, 409);
+        return c.json({ 
+          success: false,
+          error: { 
+            code: "BOOKING_CONFLICT",
+            message: error.message 
+          } 
+        }, 409);
       }
       
-      return c.json({ error: "Failed to cancel booking" }, 500);
+      return c.json({ 
+        success: false,
+        error: { 
+          code: "INTERNAL_ERROR",
+          message: "Failed to cancel booking" 
+        } 
+      }, 500);
     }
   }
 );
@@ -165,7 +243,13 @@ bookings.get("/user/me", async (c) => {
     const user = c.get("user");
 
     if (!user) {
-      return c.json({ error: "Authentication required" }, 401);
+      return c.json({ 
+        success: false,
+        error: { 
+          code: "UNAUTHORIZED",
+          message: "Authentication required" 
+        } 
+      }, 401);
     }
 
     const result = await BookingService.getUserBookings(user.id);
@@ -179,7 +263,13 @@ bookings.get("/user/me", async (c) => {
     });
   } catch (error: any) {
     console.error("Error fetching user bookings:", error);
-    return c.json({ error: "Failed to fetch bookings" }, 500);
+    return c.json({ 
+      success: false,
+      error: { 
+        code: "INTERNAL_ERROR",
+        message: "Failed to fetch bookings" 
+      } 
+    }, 500);
   }
 });
 
@@ -196,7 +286,13 @@ bookings.get(
       const user = c.get("user");
 
       if (!user) {
-        return c.json({ error: "Authentication required" }, 401);
+        return c.json({ 
+          success: false,
+          error: { 
+            code: "UNAUTHORIZED",
+            message: "Authentication required" 
+          } 
+        }, 401);
       }
 
       const result = await BookingService.getEventBookings(eventId, user.id, user.role);
@@ -213,10 +309,22 @@ bookings.get(
       console.error("Error fetching event bookings:", error);
       
       if (error.message.includes("don't have permission")) {
-        return c.json({ error: error.message }, 403);
+        return c.json({ 
+          success: false,
+          error: { 
+            code: "FORBIDDEN",
+            message: error.message 
+          } 
+        }, 403);
       }
       
-      return c.json({ error: "Failed to fetch event bookings" }, 500);
+      return c.json({ 
+        success: false,
+        error: { 
+          code: "INTERNAL_ERROR",
+          message: "Failed to fetch event bookings" 
+        } 
+      }, 500);
     }
   }
 );

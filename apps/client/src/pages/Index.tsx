@@ -6,7 +6,8 @@ import { EventCard } from '@/components/EventCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Search, User, Settings, LogOut } from 'lucide-react';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Calendar, Search, User, Settings, LogOut, Menu } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const Index = () => {
@@ -56,13 +57,81 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-primary to-primary/80 text-primary-foreground">
-        <div className="container max-w-6xl mx-auto px-4 py-20">
-          <div className="flex items-start justify-between mb-8">
+        <div className="container max-w-6xl mx-auto px-4 py-8 md:py-20">
+          {/* Mobile Header with Hamburger Menu */}
+          <div className="flex items-center justify-between mb-6 md:hidden">
+            <h2 className="text-2xl font-bold">Events</h2>
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  size="icon"
+                  className="bg-primary-foreground/10 border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/20"
+                >
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[280px]">
+                <SheetHeader>
+                  <SheetTitle>Menu</SheetTitle>
+                </SheetHeader>
+                <div className="flex flex-col gap-3 mt-6">
+                  {user ? (
+                    <>
+                      <div className="pb-3 border-b">
+                        <p className="text-sm text-muted-foreground">Signed in as</p>
+                        <p className="font-medium">{user.name}</p>
+                        <p className="text-sm text-muted-foreground">{user.email}</p>
+                      </div>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start"
+                        onClick={() => navigate('/my-bookings')}
+                      >
+                        <User className="mr-2 h-4 w-4" />
+                        My Bookings
+                      </Button>
+                      {user.role === 'admin' && (
+                        <Button
+                          variant="outline"
+                          className="w-full justify-start"
+                          onClick={() => navigate('/admin')}
+                        >
+                          <Settings className="mr-2 h-4 w-4" />
+                          Admin Dashboard
+                        </Button>
+                      )}
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start text-destructive hover:text-destructive"
+                        onClick={handleLogout}
+                      >
+                        <LogOut className="mr-2 h-4 w-4" />
+                        Logout
+                      </Button>
+                    </>
+                  ) : (
+                    <Button
+                      variant="default"
+                      className="w-full"
+                      onClick={() => navigate('/auth')}
+                    >
+                      <User className="mr-2 h-4 w-4" />
+                      Sign In
+                    </Button>
+                  )}
+                </div>
+              </SheetContent>
+            </Sheet>
+          </div>
+
+          {/* Desktop and Mobile Content */}
+          <div className="flex flex-col md:flex-row md:items-start md:justify-between mb-8">
             <div className="max-w-3xl">
-              <h1 className="text-5xl font-bold mb-4">
+              <h1 className="text-3xl md:text-5xl font-bold mb-4">
                 Book Your Seat for Upcoming Events
               </h1>
-              <p className="text-xl text-primary-foreground/90 mb-8">
+              <p className="text-base md:text-xl text-primary-foreground/90 mb-6 md:mb-8">
                 Discover webinars, training sessions, and workshops. Reserve your spot before seats run out!
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
@@ -75,7 +144,9 @@ const Index = () => {
                 </Button>
               </div>
             </div>
-            <div className="flex flex-col gap-2">
+            
+            {/* Desktop Navigation - Hidden on Mobile */}
+            <div className="hidden md:flex flex-col gap-2">
               {user ? (
                 <>
                   <Button

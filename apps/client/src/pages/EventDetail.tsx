@@ -49,17 +49,20 @@ const EventDetail = () => {
 
   // Update seats in real-time
   useEffect(() => {
-    if (lastMessage && event) {
+    if (lastMessage) {
       if (lastMessage.type === 'seat_update' || 
           lastMessage.type === 'booking_created' || 
           lastMessage.type === 'booking_cancelled') {
-        setEvent((prev: any) => ({
-          ...prev,
-          availableSeats: lastMessage.availableSeats,
-        }));
+        setEvent((prev: any) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            availableSeats: lastMessage.availableSeats,
+          };
+        });
       }
     }
-  }, [lastMessage, event]);
+  }, [lastMessage]);
 
   if (loading) {
     return (
