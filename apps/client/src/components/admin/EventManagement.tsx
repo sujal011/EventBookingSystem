@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, Edit, Trash2, Save, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { compressImage, validateImageFile } from "@/lib/image-utils";
 
 interface EventData {
   id?: number;
@@ -29,6 +30,7 @@ const EventManagement = () => {
     seatCapacity: 50,
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [isCompressing, setIsCompressing] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -257,17 +259,70 @@ const EventManagement = () => {
                     id="image"
                     type="file"
                     accept="image/*"
-                    onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) {
+                        setImageFile(null);
+                        return;
+                      }
+
+                      // Validate the file
+                      const validationError = validateImageFile(file, 5);
+                      if (validationError) {
+                        toast({
+                          title: "Invalid Image",
+                          description: validationError,
+                          variant: "destructive",
+                        });
+                        e.target.value = ''; // Clear the input
+                        return;
+                      }
+
+                      // Compress the image
+                      try {
+                        setIsCompressing(true);
+                        const originalSize = (file.size / 1024 / 1024).toFixed(2);
+                        const compressedFile = await compressImage(file, 1920, 1080, 0.85);
+                        const compressedSize = (compressedFile.size / 1024 / 1024).toFixed(2);
+                        
+                        console.log(`Image compressed: ${originalSize}MB → ${compressedSize}MB`);
+                        
+                        setImageFile(compressedFile);
+                        toast({
+                          title: "Image Ready",
+                          description: `Compressed from ${originalSize}MB to ${compressedSize}MB`,
+                        });
+                      } catch (error) {
+                        console.error("Error compressing image:", error);
+                        toast({
+                          title: "Compression Failed",
+                          description: "Using original image instead",
+                          variant: "destructive",
+                        });
+                        setImageFile(file); // Fallback to original
+                      } finally {
+                        setIsCompressing(false);
+                      }
+                    }}
+                    disabled={isCompressing}
                   />
+                  {isCompressing && (
+                    <p className="text-sm text-muted-foreground">Compressing image...</p>
+                  )}
+                  {imageFile && !isCompressing && (
+                    <p className="text-sm text-muted-foreground">
+                      Ready: {imageFile.name} ({(imageFile.size / 1024 / 1024).toFixed(2)}MB)
+                    </p>
+                  )}
                 </div>
               </div>
 
               <div className="flex gap-2">
-                <Button type="submit">
+                <Button type="submit" disabled={isCompressing}>
                   <Save className="mr-2 h-4 w-4" />
                   {editingId ? 'Update Event' : 'Create Event'}
                 </Button>
-                <Button type="button" variant="outline" onClick={cancelForm}>
+                <Button type="button" variant="outline" onClick={cancelForm} disabled={isCompressing}>
                   <X className="mr-2 h-4 w-4" />
                   Cancel
                 </Button>
