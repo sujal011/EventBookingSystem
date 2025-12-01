@@ -1,8 +1,8 @@
 ## TODOS
 
-- fix image upload
+- fix image upload ✅
 - add image preview
-- admin create event time mismatched fix
+- admin create event time mismatched fix ✅
 - ticket download feature (qr code)
 - automatic mail with event details and booking details (google Calendar linked), ticket qr code, meeting link
 - when creating event admin can set what the email should be sent each time when user books the event (mainly for meeting link) (maybe we will have pre template and admin will be able to change only the section which he needs)
