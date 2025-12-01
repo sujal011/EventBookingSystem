@@ -1,7 +1,7 @@
 ## TODOS
 
 - fix image upload ✅
-- add image preview
+- add image preview ✅
 - admin create event time mismatched fix ✅
 - ticket download feature (qr code)
 - automatic mail with event details and booking details (google Calendar linked), ticket qr code, meeting link

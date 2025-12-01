@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Plus, Edit, Trash2, Save, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { compressImage, validateImageFile } from "@/lib/image-utils";
@@ -22,7 +23,7 @@ interface EventData {
 const EventManagement = () => {
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isCreating, setIsCreating] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [formData, setFormData] = useState<Partial<EventData>>({
     name: '',
@@ -30,12 +31,22 @@ const EventManagement = () => {
     seatCapacity: 50,
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isCompressing, setIsCompressing] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
     fetchEvents();
   }, []);
+
+  // Cleanup preview URL on unmount
+  useEffect(() => {
+    return () => {
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, [imagePreview]);
 
   const fetchEvents = async () => {
     try {
@@ -76,9 +87,7 @@ const EventManagement = () => {
       const response = await eventsApi.create(data);
       if (response.success) {
         await fetchEvents();
-        setFormData({ name: '', description: '', seatCapacity: 50 });
-        setImageFile(null);
-        setIsCreating(false);
+        closeDialog();
         
         toast({
           title: "Event Created",
@@ -109,9 +118,7 @@ const EventManagement = () => {
       const response = await eventsApi.update(editingId, data);
       if (response.success) {
         await fetchEvents();
-        setEditingId(null);
-        setFormData({ name: '', description: '', seatCapacity: 50 });
-        setImageFile(null);
+        closeDialog();
         
         toast({
           title: "Event Updated",
@@ -162,15 +169,31 @@ const EventManagement = () => {
       description: event.description,
       eventDate: localDateTimeString,
       seatCapacity: event.seatCapacity,
+      imageUrl: event.imageUrl,
     });
-    setIsCreating(false);
+    
+    // Show existing image if available
+    if (event.imageUrl) {
+      setImagePreview(event.imageUrl);
+    }
+    
+    setIsDialogOpen(true);
   };
 
-  const cancelForm = () => {
-    setIsCreating(false);
+  const openCreateDialog = () => {
     setEditingId(null);
     setFormData({ name: '', description: '', seatCapacity: 50 });
     setImageFile(null);
+    setImagePreview(null);
+    setIsDialogOpen(true);
+  };
+
+  const closeDialog = () => {
+    setIsDialogOpen(false);
+    setEditingId(null);
+    setFormData({ name: '', description: '', seatCapacity: 50 });
+    setImageFile(null);
+    setImagePreview(null);
   };
 
   if (loading) {
@@ -188,149 +211,179 @@ const EventManagement = () => {
           <h2 className="text-2xl font-bold mb-2">Event Management</h2>
           <p className="text-muted-foreground">Create, edit, and manage your events</p>
         </div>
-        {!isCreating && !editingId && (
-          <Button onClick={() => setIsCreating(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            Create Event
-          </Button>
-        )}
+        <Button onClick={openCreateDialog}>
+          <Plus className="mr-2 h-4 w-4" />
+          Create Event
+        </Button>
       </div>
 
-      {(isCreating || editingId) && (
-        <Card>
-          <CardHeader>
-            <CardTitle>{editingId ? 'Edit Event' : 'Create New Event'}</CardTitle>
-            <CardDescription>
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{editingId ? 'Edit Event' : 'Create New Event'}</DialogTitle>
+            <DialogDescription>
               Fill in the event details below
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); editingId ? handleUpdate() : handleCreate(); }}>
-              <div className="grid gap-4">
+            </DialogDescription>
+          </DialogHeader>
+          
+          <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); editingId ? handleUpdate() : handleCreate(); }}>
+            <div className="grid gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Event Name *</Label>
+                <Input
+                  id="name"
+                  value={formData.name || ''}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  id="description"
+                  value={formData.description || ''}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  rows={3}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Event Name *</Label>
+                  <Label htmlFor="eventDate">Event Date & Time *</Label>
                   <Input
-                    id="name"
-                    value={formData.name || ''}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    id="eventDate"
+                    type="datetime-local"
+                    value={formData.eventDate ? formData.eventDate.slice(0, 16) : ''}
+                    onChange={(e) => setFormData({ ...formData, eventDate: e.target.value })}
                     required
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="description">Description</Label>
-                  <Textarea
-                    id="description"
-                    value={formData.description || ''}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    rows={3}
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="eventDate">Event Date & Time *</Label>
-                    <Input
-                      id="eventDate"
-                      type="datetime-local"
-                      value={formData.eventDate ? formData.eventDate.slice(0, 16) : ''}
-                      onChange={(e) => setFormData({ ...formData, eventDate: e.target.value })}
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="seatCapacity">Seat Capacity *</Label>
-                    <Input
-                      id="seatCapacity"
-                      type="number"
-                      min="1"
-                      max="10000"
-                      value={formData.seatCapacity || 50}
-                      onChange={(e) => setFormData({ ...formData, seatCapacity: parseInt(e.target.value) })}
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="image">Event Image</Label>
+                  <Label htmlFor="seatCapacity">Seat Capacity *</Label>
                   <Input
-                    id="image"
-                    type="file"
-                    accept="image/*"
-                    onChange={async (e) => {
-                      const file = e.target.files?.[0];
-                      if (!file) {
-                        setImageFile(null);
-                        return;
-                      }
-
-                      // Validate the file
-                      const validationError = validateImageFile(file, 5);
-                      if (validationError) {
-                        toast({
-                          title: "Invalid Image",
-                          description: validationError,
-                          variant: "destructive",
-                        });
-                        e.target.value = ''; // Clear the input
-                        return;
-                      }
-
-                      // Compress the image
-                      try {
-                        setIsCompressing(true);
-                        const originalSize = (file.size / 1024 / 1024).toFixed(2);
-                        const compressedFile = await compressImage(file, 1920, 1080, 0.85);
-                        const compressedSize = (compressedFile.size / 1024 / 1024).toFixed(2);
-                        
-                        console.log(`Image compressed: ${originalSize}MB → ${compressedSize}MB`);
-                        
-                        setImageFile(compressedFile);
-                        toast({
-                          title: "Image Ready",
-                          description: `Compressed from ${originalSize}MB to ${compressedSize}MB`,
-                        });
-                      } catch (error) {
-                        console.error("Error compressing image:", error);
-                        toast({
-                          title: "Compression Failed",
-                          description: "Using original image instead",
-                          variant: "destructive",
-                        });
-                        setImageFile(file); // Fallback to original
-                      } finally {
-                        setIsCompressing(false);
-                      }
-                    }}
-                    disabled={isCompressing}
+                    id="seatCapacity"
+                    type="number"
+                    min="1"
+                    max="10000"
+                    value={formData.seatCapacity || 50}
+                    onChange={(e) => setFormData({ ...formData, seatCapacity: parseInt(e.target.value) })}
+                    required
                   />
-                  {isCompressing && (
-                    <p className="text-sm text-muted-foreground">Compressing image...</p>
-                  )}
-                  {imageFile && !isCompressing && (
-                    <p className="text-sm text-muted-foreground">
-                      Ready: {imageFile.name} ({(imageFile.size / 1024 / 1024).toFixed(2)}MB)
-                    </p>
-                  )}
                 </div>
               </div>
 
-              <div className="flex gap-2">
-                <Button type="submit" disabled={isCompressing}>
-                  <Save className="mr-2 h-4 w-4" />
-                  {editingId ? 'Update Event' : 'Create Event'}
-                </Button>
-                <Button type="button" variant="outline" onClick={cancelForm} disabled={isCompressing}>
-                  <X className="mr-2 h-4 w-4" />
-                  Cancel
-                </Button>
+              <div className="space-y-2">
+                <Label htmlFor="image">Event Image {editingId && formData.imageUrl && !imageFile && '(Current image shown below)'}</Label>
+                <Input
+                  id="image"
+                  type="file"
+                  accept="image/*"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) {
+                      setImageFile(null);
+                      setImagePreview(null);
+                      return;
+                    }
+
+                    // Validate the file
+                    const validationError = validateImageFile(file, 5);
+                    if (validationError) {
+                      toast({
+                        title: "Invalid Image",
+                        description: validationError,
+                        variant: "destructive",
+                      });
+                      e.target.value = ''; // Clear the input
+                      return;
+                    }
+
+                    // Compress the image
+                    try {
+                      setIsCompressing(true);
+                      const originalSize = (file.size / 1024 / 1024).toFixed(2);
+                      const compressedFile = await compressImage(file, 1920, 1080, 0.85);
+                      const compressedSize = (compressedFile.size / 1024 / 1024).toFixed(2);
+                      
+                      console.log(`Image compressed: ${originalSize}MB → ${compressedSize}MB`);
+                      
+                      setImageFile(compressedFile);
+                      
+                      // Create preview URL
+                      const previewUrl = URL.createObjectURL(compressedFile);
+                      setImagePreview(previewUrl);
+                      
+                      toast({
+                        title: "Image Ready",
+                        description: `Compressed from ${originalSize}MB to ${compressedSize}MB`,
+                      });
+                    } catch (error) {
+                      console.error("Error compressing image:", error);
+                      toast({
+                        title: "Compression Failed",
+                        description: "Using original image instead",
+                        variant: "destructive",
+                      });
+                      setImageFile(file); // Fallback to original
+                      
+                      // Create preview URL for original file
+                      const previewUrl = URL.createObjectURL(file);
+                      setImagePreview(previewUrl);
+                    } finally {
+                      setIsCompressing(false);
+                    }
+                  }}
+                  disabled={isCompressing}
+                />
+                {isCompressing && (
+                  <p className="text-sm text-muted-foreground">Compressing image...</p>
+                )}
+                {imageFile && !isCompressing && (
+                  <p className="text-sm text-muted-foreground">
+                    Ready: {imageFile.name} ({(imageFile.size / 1024 / 1024).toFixed(2)}MB)
+                  </p>
+                )}
+                {imagePreview && !isCompressing && (
+                  <div className="relative w-full max-w-md mt-2">
+                    <img 
+                      src={imagePreview} 
+                      alt="Preview" 
+                      className="w-full h-48 object-cover rounded-lg border"
+                    />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      className="absolute top-2 right-2"
+                      onClick={() => {
+                        setImageFile(null);
+                        setImagePreview(null);
+                        const input = document.getElementById('image') as HTMLInputElement;
+                        if (input) input.value = '';
+                      }}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
               </div>
-            </form>
-          </CardContent>
-        </Card>
-      )}
+            </div>
+
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={closeDialog} disabled={isCompressing}>
+                <X className="mr-2 h-4 w-4" />
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isCompressing}>
+                <Save className="mr-2 h-4 w-4" />
+                {editingId ? 'Update Event' : 'Create Event'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       <div className="grid gap-4">
         {events.map((event) => (
