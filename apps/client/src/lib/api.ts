@@ -137,3 +137,10 @@ export const bookingsApi = {
     return authFetch(`/api/bookings/admin/events/${eventId}`);
   },
 };
+
+// Analytics API
+export const analyticsApi = {
+  getDashboardStats: async () => {
+    return authFetch('/api/analytics/dashboard-stats');
+  },
+};

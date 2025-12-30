@@ -7,6 +7,7 @@ import { db } from './db';
 import authRoutes from './routes/auth';
 import eventRoutes from './routes/events';
 import bookingRoutes from './routes/bookings';
+import analyticsRoutes from './routes/analytics';
 import wsRoutes from './routes/websocket';
 
 const app = new Hono();
@@ -33,6 +34,9 @@ app.route('/api/events', eventRoutes);
 
 // Booking routes
 app.route('/api/bookings', bookingRoutes);
+
+// Analytics routes
+app.route('/api/analytics', analyticsRoutes);
 
 // WebSocket routes
 app.route('/ws', wsRoutes);
