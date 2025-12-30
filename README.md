@@ -3,12 +3,12 @@
 - fix image upload ✅
 - add image preview ✅
 - admin create event time mismatched fix ✅
-- ticket download feature (qr code)
+- ticket download feature (qr code)✅
 - automatic mail with event details and booking details (google Calendar linked), ticket qr code, meeting link
 - when creating event admin can set what the email should be sent each time when user books the event (mainly for meeting link) (maybe we will have pre template and admin will be able to change only the section which he needs)
-- export mail list feature (so that he can manually send mail if needed)
+- export mail list feature (so that he can manually send mail if needed)✅
 - add admin stats feature
-- websockets implemented?
+- websockets implemented ✅
 - add a redis cache layer
 
 future -
