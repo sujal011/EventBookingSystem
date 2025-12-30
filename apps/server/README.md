@@ -339,15 +339,6 @@ See [Setup Guide](./docs/SETUP.md) for detailed troubleshooting.
 5. Test your changes
 6. Submit a pull request
 
-## License
-
-[Your License Here]
-
-## Support
-
-- 📧 Email: [your-email]
-- 🐛 Issues: [GitHub Issues]
-- 📖 Docs: [Documentation]
 
 ## Acknowledgments
 
