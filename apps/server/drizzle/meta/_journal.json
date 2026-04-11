@@ -15,6 +15,27 @@
       "when": 1763038490357,
       "tag": "0001_adorable_squadron_sinister",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1763038490358,
+      "tag": "0002_stored_procedures",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1763038490359,
+      "tag": "0003_fix_booking_constraint",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1763038490360,
+      "tag": "0004_performance_indexes",
+      "breakpoints": true
     }
   ]
 }
